@@ -1,0 +1,13 @@
+server.port: 8085
+spring:
+  datasource:
+    driver-class-name: org.h2.Driver
+  jackson:
+    time-zone: GMT+8
+  sql:
+    init:
+      data-locations: classpath:init.sql
+mybatis:
+  configuration:
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+  mapper-locations: classpath:mapper/*Mapper.xml

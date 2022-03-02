@@ -1,0 +1,36 @@
+###
+GET http://localhost:8085/?username=test
+
+<> 2022-03-02T221336.200.json
+<> 2022-03-02T221322.200.json
+
+###
+POST http://localhost:8085/
+Content-Type: application/json
+
+{
+  "username": "test",
+  "password": "content",
+  "gender": "未知"
+}
+
+###
+POST http://localhost:8085/
+Content-Type: application/json
+
+{
+  "username": "test",
+  "password": "content",
+  "gender": "com.muyuanjin.enumerate.Gender:MALE"
+}
+
+###
+POST http://localhost:8085/
+Content-Type: application/json
+
+{
+  "username": "test1",
+  "password": "content",
+  "gender": 1
+}
+
