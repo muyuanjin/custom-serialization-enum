@@ -1,1 +1,1 @@
-# serializable-enum
+# custom-serialization-enum
