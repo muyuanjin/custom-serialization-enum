@@ -19,6 +19,8 @@ public @interface CustomSerializationEnum {
 
     Type json() default Type.NAME;
 
+    Type requestParam() default Type.NAME;
+
     enum Type {
 
         NAME {
@@ -49,7 +51,7 @@ public @interface CustomSerializationEnum {
 
         @SuppressWarnings("unchecked")
         public <T extends Enum<T> & EnumSerialize<T>> T getDeserializeObj(Class<T> enumClass, Object serializedValue) {
-            if (serializedValue == null) {
+            if (enumClass == null || serializedValue == null) {
                 return null;
             }
             return (T) DESERIALIZE_MAP.computeIfAbsent(enumClass, t -> new ConcurrentHashMap<>())

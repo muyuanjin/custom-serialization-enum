@@ -1,17 +1,21 @@
 package com.muyuanjin;
 
 import com.fasterxml.jackson.databind.module.SimpleModule;
+import com.muyuanjin.annotating.CustomSerializationEnum;
 import com.muyuanjin.annotating.EnumSerialize;
 import com.muyuanjin.map.CustomSerializationEnumJsonDeserializer;
 import com.muyuanjin.map.CustomSerializationEnumJsonSerializer;
 import com.muyuanjin.map.CustomSerializationEnumTypeHandler;
 import lombok.SneakyThrows;
 import org.mybatis.spring.boot.autoconfigure.ConfigurationCustomizer;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.boot.autoconfigure.jackson.Jackson2ObjectMapperBuilderCustomizer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.annotation.AnnotationUtils;
+import org.springframework.core.convert.converter.ConverterRegistry;
 import org.springframework.core.type.filter.AssignableTypeFilter;
 
 import java.lang.reflect.Modifier;
@@ -25,6 +29,16 @@ import java.util.Set;
 @Configuration(proxyBeanMethods = false)
 public class TestConfig {
     private final List<Class<EnumSerialize<?>>> enumSerializes = getEnumSerializes();
+
+    @Autowired
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    void registryConverter(ConverterRegistry converterRegistry) {
+        for (Class<EnumSerialize<?>> enumSerialize : enumSerializes) {
+            CustomSerializationEnum annotation = AnnotationUtils.findAnnotation(enumSerialize, CustomSerializationEnum.class);
+            CustomSerializationEnum.Type type = annotation == null ? CustomSerializationEnum.Type.NAME : annotation.requestParam();
+            converterRegistry.addConverter(String.class, (Class) enumSerialize, t -> type.getDeserializeObj((Class) enumSerialize, t));
+        }
+    }
 
     @Bean
     @SuppressWarnings({"unchecked", "rawtypes"})

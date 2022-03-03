@@ -22,6 +22,4 @@ public enum Gender implements EnumSerialize<Gender> {
     public String getSerializationName() {
         return name;
     }
-
-
 }

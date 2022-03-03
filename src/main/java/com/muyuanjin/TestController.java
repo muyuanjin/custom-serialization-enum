@@ -1,6 +1,7 @@
 package com.muyuanjin;
 
 import com.muyuanjin.entity.UserEntity;
+import com.muyuanjin.enumerate.Gender;
 import com.muyuanjin.mapper.UserMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -26,5 +27,10 @@ public class TestController {
     @PostMapping
     public void creat(@RequestBody UserEntity userEntity) {
         userMapper.insert(userEntity);
+    }
+
+    @GetMapping("/show")
+    public Gender show(Gender gender) {
+        return gender;
     }
 }

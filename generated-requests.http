@@ -1,8 +1,8 @@
 ###
 GET http://localhost:8085/?username=test
 
-<> 2022-03-02T221336.200.json
-<> 2022-03-02T221322.200.json
+###
+GET http://localhost:8085/show?gender=男
 
 ###
 POST http://localhost:8085/

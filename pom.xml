@@ -9,10 +9,10 @@
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
     <groupId>com.muyuanjin</groupId>
-    <artifactId>serializable-enum</artifactId>
+    <artifactId>custom-serialization-enum</artifactId>
     <version>0.0.1-SNAPSHOT</version>
-    <name>serializable-enum</name>
-    <description>serializable-enum for Spring Boot</description>
+    <name>custom-serialization-enum</name>
+    <description>custom-serialization-enum for Spring Boot</description>
     <properties>
         <java.version>1.8</java.version>
     </properties>
