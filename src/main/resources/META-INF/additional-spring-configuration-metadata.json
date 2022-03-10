@@ -1,0 +1,9 @@
+{
+  "properties": [
+    {
+      "name": "custom-serialization-enum.path",
+      "type": "java.lang.String",
+      "sourceType": "com.muyuanjin.TestConfig$TestConfig",
+      "description": "custom-serialization-enum's scan path."
+  }
+] }

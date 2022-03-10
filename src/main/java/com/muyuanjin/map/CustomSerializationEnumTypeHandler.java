@@ -2,6 +2,7 @@ package com.muyuanjin.map;
 
 import com.muyuanjin.annotating.CustomSerializationEnum;
 import com.muyuanjin.annotating.EnumSerialize;
+import com.muyuanjin.annotating.EnumSerializeProxy;
 import org.apache.ibatis.type.BaseTypeHandler;
 import org.apache.ibatis.type.JdbcType;
 import org.springframework.core.annotation.AnnotationUtils;
@@ -26,7 +27,14 @@ public class CustomSerializationEnumTypeHandler<T extends Enum<T> & EnumSerializ
 
     @Override
     public void setNonNullParameter(PreparedStatement ps, int i, T parameter, JdbcType jdbcType) throws SQLException {
-        Object serializedValue = type.getSerializedValue(parameter);
+        Object serializedValue;
+        //noinspection ConstantConditions
+        if (parameter instanceof EnumSerialize) {
+            serializedValue = type.getSerializedValue(parameter);
+        } else {
+            //noinspection ConstantConditions
+            serializedValue = type.getSerializedValue(new EnumSerializeProxy(parameter));
+        }
         if (serializedValue instanceof String) {
             ps.setString(i, (String) serializedValue);
         } else if (serializedValue instanceof Integer) {
@@ -36,28 +44,16 @@ public class CustomSerializationEnumTypeHandler<T extends Enum<T> & EnumSerializ
 
     @Override
     public T getNullableResult(ResultSet rs, String columnName) throws SQLException {
-        if (type.equals(CustomSerializationEnum.Type.ID)) {
-            return type.getDeserializeObj(enumCLass, rs.getInt(columnName));
-        } else {
-            return type.getDeserializeObj(enumCLass, rs.getString(columnName));
-        }
+        return type.getDeserializeObj(enumCLass, rs.getObject(columnName));
     }
 
     @Override
     public T getNullableResult(ResultSet rs, int columnIndex) throws SQLException {
-        if (type.equals(CustomSerializationEnum.Type.ID)) {
-            return type.getDeserializeObj(enumCLass, rs.getInt(columnIndex));
-        } else {
-            return type.getDeserializeObj(enumCLass, rs.getString(columnIndex));
-        }
+        return type.getDeserializeObj(enumCLass, rs.getObject(columnIndex));
     }
 
     @Override
     public T getNullableResult(CallableStatement cs, int columnIndex) throws SQLException {
-        if (type.equals(CustomSerializationEnum.Type.ID)) {
-            return type.getDeserializeObj(enumCLass, cs.getInt(columnIndex));
-        } else {
-            return type.getDeserializeObj(enumCLass, cs.getString(columnIndex));
-        }
+        return type.getDeserializeObj(enumCLass, cs.getObject(columnIndex));
     }
 }

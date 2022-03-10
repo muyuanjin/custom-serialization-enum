@@ -1,6 +1,7 @@
 package com.muyuanjin;
 
 import com.muyuanjin.entity.UserEntity;
+import com.muyuanjin.enumerate.AccountType;
 import com.muyuanjin.enumerate.Gender;
 import com.muyuanjin.mapper.UserMapper;
 import lombok.RequiredArgsConstructor;
@@ -29,8 +30,13 @@ public class TestController {
         userMapper.insert(userEntity);
     }
 
-    @GetMapping("/show")
-    public Gender show(Gender gender) {
+    @GetMapping("/gender")
+    public Gender gender(Gender gender) {
         return gender;
+    }
+
+    @GetMapping("/accountType")
+    public AccountType accountType(AccountType accountType) {
+        return accountType;
     }
 }

@@ -11,3 +11,5 @@ mybatis:
   configuration:
     log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
   mapper-locations: classpath:mapper/*Mapper.xml
+
+custom-serialization-enum.path: com.muyuanjin

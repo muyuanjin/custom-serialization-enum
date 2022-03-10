@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.muyuanjin.annotating.CustomSerializationEnum;
 import com.muyuanjin.annotating.EnumSerialize;
+import com.muyuanjin.annotating.EnumSerializeProxy;
 import org.springframework.core.annotation.AnnotationUtils;
 
 import java.io.IOException;
@@ -22,7 +23,14 @@ public class CustomSerializationEnumJsonSerializer<T extends Enum<T> & EnumSeria
 
     @Override
     public void serialize(T value, JsonGenerator gen, SerializerProvider serializers) throws IOException {
-        Object serializedValue = type.getSerializedValue(value);
+        Object serializedValue;
+        //noinspection ConstantConditions
+        if (value instanceof EnumSerialize) {
+            serializedValue = type.getSerializedValue(value);
+        } else {
+            //noinspection ConstantConditions
+            serializedValue = type.getSerializedValue(new EnumSerializeProxy(value));
+        }
         serializers.findValueSerializer(serializedValue.getClass()).serialize(serializedValue, gen, serializers);
     }
 }

@@ -10,7 +10,17 @@ import com.muyuanjin.annotating.EnumSerialize;
 public enum Gender implements EnumSerialize<Gender> {
     MALE("男"),
     FEMALE("女"),
-    UNKNOWN("未知");
+    UNKNOWN("未知") {
+        @Override
+        public String getSerializationName() {
+            return "秀吉";
+        }
+
+        @Override
+        public Integer getSerializationId() {
+            return 114514;
+        }
+    };
 
     private final String name;
 

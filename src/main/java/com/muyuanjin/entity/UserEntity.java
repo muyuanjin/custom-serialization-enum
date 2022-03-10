@@ -1,5 +1,6 @@
 package com.muyuanjin.entity;
 
+import com.muyuanjin.enumerate.AccountType;
 import com.muyuanjin.enumerate.Gender;
 import lombok.Data;
 
@@ -11,4 +12,5 @@ public class UserEntity {
     private String username;
     private String password;
     private Gender gender;
+    private AccountType accountType;
 }

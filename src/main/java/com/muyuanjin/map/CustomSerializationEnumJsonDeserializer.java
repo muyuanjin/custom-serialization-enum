@@ -24,10 +24,6 @@ public class CustomSerializationEnumJsonDeserializer<T extends Enum<T> & EnumSer
 
     @Override
     public T deserialize(JsonParser p, DeserializationContext ctxt) throws IOException {
-        if (type.equals(CustomSerializationEnum.Type.ID)) {
-            return type.getDeserializeObj(enumCLass, p.getIntValue());
-        } else {
-            return type.getDeserializeObj(enumCLass, p.getText());
-        }
+        return type.getDeserializeObj(enumCLass, p.getText());
     }
 }

@@ -1,14 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!--suppress SqlResolve, SqlNoDataSourceInspection -->
 <mapper namespace="com.muyuanjin.mapper.UserMapper">
     <resultMap id="BaseResultMap" type="com.muyuanjin.entity.UserEntity">
         <result column="username" jdbcType="VARCHAR" property="username" />
         <result column="password" jdbcType="VARCHAR" property="password" />
         <result column="gender" jdbcType="VARCHAR" property="gender" />
+        <result column="account_type" jdbcType="VARCHAR" property="accountType" />
     </resultMap>
     <insert id="insert" parameterType="com.muyuanjin.entity.UserEntity">
-        insert into `user` (`username`,`password`,gender)
-        values (#{username,jdbcType=VARCHAR},#{password,jdbcType=VARCHAR},#{gender,jdbcType=VARCHAR})
+        insert into `user` (`username`,`password`,gender,account_type)
+        values (#{username,jdbcType=VARCHAR},#{password,jdbcType=VARCHAR},#{gender,jdbcType=VARCHAR},#{accountType,jdbcType=VARCHAR})
     </insert>
     <select id="select" resultMap="BaseResultMap">
         select * from `user`

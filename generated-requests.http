@@ -2,7 +2,10 @@
 GET http://localhost:8085/?username=test
 
 ###
-GET http://localhost:8085/show?gender=男
+GET http://localhost:8085/gender?gender=男
+
+###
+GET http://localhost:8085/accountType?accountType=0
 
 ###
 POST http://localhost:8085/
@@ -11,7 +14,8 @@ Content-Type: application/json
 {
   "username": "test",
   "password": "content",
-  "gender": "未知"
+  "gender": "秀吉",
+  "accountType": "ORDINARY"
 }
 
 ###
@@ -21,7 +25,8 @@ Content-Type: application/json
 {
   "username": "test",
   "password": "content",
-  "gender": "com.muyuanjin.enumerate.Gender:MALE"
+  "gender": "com.muyuanjin.enumerate.Gender:MALE",
+  "accountType": "ORDINARY"
 }
 
 ###
@@ -31,6 +36,7 @@ Content-Type: application/json
 {
   "username": "test1",
   "password": "content",
-  "gender": 1
+  "gender": 1,
+  "accountType": "GUEST"
 }
 
