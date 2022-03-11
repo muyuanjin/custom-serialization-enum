@@ -42,7 +42,7 @@ public @interface CustomSerializationEnum {
         CLASS {
             @Override
             public String getSerializedValue(EnumSerialize<?> serializationEnum) {
-                return serializationEnum.getClass().getCanonicalName() + ":" + ((Enum<?>) serializationEnum).name();
+                return serializationEnum.getOriginalClass().getCanonicalName() + ":" + serializationEnum.getOriginalEnum().name();
             }
         },
         TO_STRING {

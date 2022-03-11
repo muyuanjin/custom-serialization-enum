@@ -7,6 +7,7 @@ import com.muyuanjin.annotating.EnumSerializeProxy;
 import com.muyuanjin.map.CustomSerializationEnumJsonDeserializer;
 import com.muyuanjin.map.CustomSerializationEnumJsonSerializer;
 import com.muyuanjin.map.CustomSerializationEnumTypeHandler;
+import javafx.util.Pair;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.mybatis.spring.boot.autoconfigure.ConfigurationCustomizer;
@@ -17,14 +18,12 @@ import org.springframework.boot.autoconfigure.jackson.Jackson2ObjectMapperBuilde
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.core.convert.converter.ConverterRegistry;
 import org.springframework.core.type.filter.AnnotationTypeFilter;
 import org.springframework.core.type.filter.AssignableTypeFilter;
+import sun.misc.SharedSecrets;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 /**
  * @author muyuanjin
@@ -32,22 +31,22 @@ import java.util.Set;
 @Slf4j
 @Configuration(proxyBeanMethods = false)
 public class TestConfig {
-    private final List<Class<EnumSerialize<?>>> enumSerializes;
+    private final Map<Class<Enum<?>>, Set<EnumSerialize<?>>> enumSerializes;
 
     public TestConfig(@Value("${custom-serialization-enum.path:'com'}") String path) {
         final ClassPathScanningCandidateComponentProvider provider = new ClassPathScanningCandidateComponentProvider(false);
         enumSerializes = getEnumSerializes(provider, path);
-        //noinspection unchecked,rawtypes
-        enumSerializes.addAll((List) getAnnotatedEnums(provider, path));
+        enumSerializes.putAll(getAnnotatedEnums(provider, path));
     }
 
     @Autowired
     @SuppressWarnings({"unchecked", "rawtypes"})
     void registryConverter(ConverterRegistry converterRegistry) {
-        for (Class<EnumSerialize<?>> enumSerialize : enumSerializes) {
-            CustomSerializationEnum annotation = AnnotationUtils.findAnnotation(enumSerialize, CustomSerializationEnum.class);
+        for (Map.Entry<Class<Enum<?>>, Set<EnumSerialize<?>>> classSetEntry : enumSerializes.entrySet()) {
+            EnumSerialize<?> next = classSetEntry.getValue().iterator().next();
+            CustomSerializationEnum annotation = next.getAnnotation();
             CustomSerializationEnum.Type type = annotation == null ? CustomSerializationEnum.Type.NAME : annotation.requestParam();
-            converterRegistry.addConverter(String.class, (Class) enumSerialize, t -> type.getDeserializeObj((Class) enumSerialize, t));
+            converterRegistry.addConverter(String.class, (Class) next.getOriginalClass(), t -> type.getDeserializeObj((Class) next.getOriginalClass(), t));
         }
     }
 
@@ -56,9 +55,10 @@ public class TestConfig {
     public Jackson2ObjectMapperBuilderCustomizer jsonCustomizer() {
         return builder -> builder.modules(new SimpleModule() {
             {
-                for (Class<EnumSerialize<?>> enumSerialize : enumSerializes) {
-                    addDeserializer(enumSerialize, new CustomSerializationEnumJsonDeserializer(enumSerialize));
-                    addSerializer(enumSerialize, new CustomSerializationEnumJsonSerializer(enumSerialize));
+                for (Map.Entry<Class<Enum<?>>, Set<EnumSerialize<?>>> classSetEntry : enumSerializes.entrySet()) {
+                    EnumSerialize<?> next = classSetEntry.getValue().iterator().next();
+                    addDeserializer(next.getOriginalClass(), new CustomSerializationEnumJsonDeserializer(new Pair<>(classSetEntry.getKey(), classSetEntry.getValue())));
+                    addSerializer(next.getOriginalClass(), new CustomSerializationEnumJsonSerializer(new Pair<>(classSetEntry.getKey(), classSetEntry.getValue())));
                 }
             }
         });
@@ -68,8 +68,9 @@ public class TestConfig {
     @SuppressWarnings({"unchecked", "rawtypes"})
     ConfigurationCustomizer mybatisConfigurationCustomizer() {
         return t -> {
-            for (Class<EnumSerialize<?>> enumSerialize : enumSerializes) {
-                t.getTypeHandlerRegistry().register(enumSerialize, new CustomSerializationEnumTypeHandler(enumSerialize));
+            for (Map.Entry<Class<Enum<?>>, Set<EnumSerialize<?>>> classSetEntry : enumSerializes.entrySet()) {
+                EnumSerialize<?> next = classSetEntry.getValue().iterator().next();
+                t.getTypeHandlerRegistry().register(next.getOriginalClass(), new CustomSerializationEnumTypeHandler(new Pair<>(classSetEntry.getKey(), classSetEntry.getValue())));
             }
         };
     }
@@ -79,44 +80,50 @@ public class TestConfig {
      *
      * @return 所有该类子类或实现类的列表
      */
+    @SuppressWarnings({"unchecked", "rawtypes"})
     @SneakyThrows(ClassNotFoundException.class)
-    private static List<Class<EnumSerialize<?>>> getEnumSerializes(ClassPathScanningCandidateComponentProvider provider, String path) {
+    private static Map<Class<Enum<?>>, Set<EnumSerialize<?>>> getEnumSerializes(ClassPathScanningCandidateComponentProvider provider, String path) {
         provider.resetFilters(false);
         provider.addIncludeFilter(new AssignableTypeFilter(EnumSerialize.class));
         final Set<BeanDefinition> components = provider.findCandidateComponents(path);
-        final List<Class<EnumSerialize<?>>> subClasses = new ArrayList<>();
+        final Map<Class<Enum<?>>, Set<EnumSerialize<?>>> enumSerializes = new HashMap<>();
         for (final BeanDefinition component : components) {
-            @SuppressWarnings("unchecked") final Class<EnumSerialize<?>> cls = (Class<EnumSerialize<?>>) Class.forName(component.getBeanClassName());
+            final Class<EnumSerialize<?>> cls = (Class<EnumSerialize<?>>) Class.forName(component.getBeanClassName());
             if (cls.equals(EnumSerializeProxy.class)) {
                 continue;
             }
             if (cls.isEnum()) {
-                subClasses.add(cls);
+                Arrays.stream(SharedSecrets.getJavaLangAccess().getEnumConstantsShared((Class) cls))
+                        .forEach(e -> enumSerializes.computeIfAbsent((Class<Enum<?>>) ((EnumSerialize<?>) e).getOriginalClass(),
+                                t -> new HashSet<>()).add((EnumSerialize<?>) e));
             } else {
-                throw new UnsupportedOperationException("Class:" + cls.getCanonicalName() + "is not enum! " +
-                        "The class that implements the \"EnumSerialize\" must be an enumeration class.");
+                throw new UnsupportedOperationException("Class:" + cls.getCanonicalName() + "is not enum! " + "The class that implements the \"EnumSerialize\" must be an enumeration class.");
             }
         }
-        return subClasses;
+        return enumSerializes;
     }
 
+    @SuppressWarnings({"unchecked", "rawtypes"})
     @SneakyThrows(ClassNotFoundException.class)
-    private static List<Class<Enum<?>>> getAnnotatedEnums(ClassPathScanningCandidateComponentProvider provider, String path) {
+    private static Map<Class<Enum<?>>, Set<EnumSerialize<?>>> getAnnotatedEnums(ClassPathScanningCandidateComponentProvider provider, String path) {
         provider.resetFilters(false);
         provider.addIncludeFilter(new AnnotationTypeFilter(CustomSerializationEnum.class));
         provider.addExcludeFilter(new AssignableTypeFilter(EnumSerialize.class));
         final Set<BeanDefinition> components = provider.findCandidateComponents(path);
-        final List<Class<Enum<?>>> enumClasses = new ArrayList<>();
+        final Map<Class<Enum<?>>, Set<EnumSerialize<?>>> enumSerializes = new HashMap<>();
         for (final BeanDefinition component : components) {
-            @SuppressWarnings("unchecked") final Class<Enum<?>> cls = (Class<Enum<?>>) Class.forName(component.getBeanClassName());
+            final Class<Enum<?>> cls = (Class<Enum<?>>) Class.forName(component.getBeanClassName());
             if (cls.isEnum()) {
-                enumClasses.add(cls);
+                Arrays.stream(SharedSecrets.getJavaLangAccess().getEnumConstantsShared((Class) cls))
+                        .forEach(e ->
+                                enumSerializes.computeIfAbsent((Class<Enum<?>>) e.getClass(), t -> new HashSet<>())
+                                        .add(new EnumSerializeProxy((Enum<?>) e))
+                        );
             } else {
-                throw new UnsupportedOperationException("Class:" + cls.getCanonicalName() + "is not enum! " +
-                        "The class annotated by \"CustomSerializationEnum\" must be an enumeration class.");
+                throw new UnsupportedOperationException("Class:" + cls.getCanonicalName() + "is not enum! " + "The class annotated by \"CustomSerializationEnum\" must be an enumeration class.");
             }
         }
-        return enumClasses;
+        return enumSerializes;
     }
 
 }

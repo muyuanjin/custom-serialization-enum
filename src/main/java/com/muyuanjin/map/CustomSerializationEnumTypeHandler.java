@@ -3,25 +3,27 @@ package com.muyuanjin.map;
 import com.muyuanjin.annotating.CustomSerializationEnum;
 import com.muyuanjin.annotating.EnumSerialize;
 import com.muyuanjin.annotating.EnumSerializeProxy;
+import javafx.util.Pair;
 import org.apache.ibatis.type.BaseTypeHandler;
 import org.apache.ibatis.type.JdbcType;
-import org.springframework.core.annotation.AnnotationUtils;
 
 import java.sql.CallableStatement;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Set;
 
 /**
  * @author muyuanjin
  */
 public class CustomSerializationEnumTypeHandler<T extends Enum<T> & EnumSerialize<T>> extends BaseTypeHandler<T> {
-    private final Class<T> enumCLass;
     private final CustomSerializationEnum.Type type;
+    private final Class<T> clazz;
 
-    public CustomSerializationEnumTypeHandler(Class<T> customSerializationEnumClass) {
-        enumCLass = customSerializationEnumClass;
-        CustomSerializationEnum annotation = AnnotationUtils.findAnnotation(customSerializationEnumClass, CustomSerializationEnum.class);
+    public CustomSerializationEnumTypeHandler(Pair<Class<Enum<?>>, Set<EnumSerialize<T>>> enumSerialize) {
+        EnumSerialize<T> next = enumSerialize.getValue().iterator().next();
+        clazz = next.getOriginalClass();
+        CustomSerializationEnum annotation = next.getAnnotation();
         type = annotation == null ? CustomSerializationEnum.Type.NAME : annotation.myBatis();
     }
 
@@ -44,16 +46,16 @@ public class CustomSerializationEnumTypeHandler<T extends Enum<T> & EnumSerializ
 
     @Override
     public T getNullableResult(ResultSet rs, String columnName) throws SQLException {
-        return type.getDeserializeObj(enumCLass, rs.getObject(columnName));
+        return type.getDeserializeObj(clazz, rs.getObject(columnName));
     }
 
     @Override
     public T getNullableResult(ResultSet rs, int columnIndex) throws SQLException {
-        return type.getDeserializeObj(enumCLass, rs.getObject(columnIndex));
+        return type.getDeserializeObj(clazz, rs.getObject(columnIndex));
     }
 
     @Override
     public T getNullableResult(CallableStatement cs, int columnIndex) throws SQLException {
-        return type.getDeserializeObj(enumCLass, cs.getObject(columnIndex));
+        return type.getDeserializeObj(clazz, cs.getObject(columnIndex));
     }
 }

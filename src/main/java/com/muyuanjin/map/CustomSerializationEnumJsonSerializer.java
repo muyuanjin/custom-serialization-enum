@@ -6,9 +6,10 @@ import com.fasterxml.jackson.databind.SerializerProvider;
 import com.muyuanjin.annotating.CustomSerializationEnum;
 import com.muyuanjin.annotating.EnumSerialize;
 import com.muyuanjin.annotating.EnumSerializeProxy;
-import org.springframework.core.annotation.AnnotationUtils;
+import javafx.util.Pair;
 
 import java.io.IOException;
+import java.util.Set;
 
 /**
  * @author muyuanjin
@@ -16,8 +17,8 @@ import java.io.IOException;
 public class CustomSerializationEnumJsonSerializer<T extends Enum<T> & EnumSerialize<T>> extends JsonSerializer<T> {
     private final CustomSerializationEnum.Type type;
 
-    public CustomSerializationEnumJsonSerializer(Class<T> customSerializationEnumClass) {
-        CustomSerializationEnum annotation = AnnotationUtils.findAnnotation(customSerializationEnumClass, CustomSerializationEnum.class);
+    public CustomSerializationEnumJsonSerializer(Pair<Class<Enum<?>>, Set<EnumSerialize<T>>> enumSerialize) {
+        CustomSerializationEnum annotation = enumSerialize.getValue().iterator().next().getAnnotation();
         type = annotation == null ? CustomSerializationEnum.Type.NAME : annotation.json();
     }
 

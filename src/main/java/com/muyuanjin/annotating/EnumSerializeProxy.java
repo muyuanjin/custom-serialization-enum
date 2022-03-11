@@ -2,6 +2,7 @@ package com.muyuanjin.annotating;
 
 /**
  * 用来包装没有实现{@link EnumSerialize} 的 但又被{@link CustomSerializationEnum}注解的类
+ *
  * @author muyuanjin
  */
 @SuppressWarnings("rawtypes")
@@ -29,5 +30,15 @@ public class EnumSerializeProxy implements EnumSerialize {
     @Override
     public String toString() {
         return enumInstance.toString();
+    }
+
+    @Override
+    public Class<?> getOriginalClass() {
+        return enumInstance.getClass();
+    }
+
+    @Override
+    public Enum<?> getOriginalEnum() {
+        return enumInstance;
     }
 }
