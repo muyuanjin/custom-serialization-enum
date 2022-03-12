@@ -5,7 +5,7 @@ import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.muyuanjin.annotating.CustomSerializationEnum;
 import com.muyuanjin.annotating.EnumSerialize;
-import com.muyuanjin.annotating.EnumSerializeProxy;
+import com.muyuanjin.annotating.EnumSerializeAdapter;
 import javafx.util.Pair;
 
 import java.io.IOException;
@@ -31,7 +31,7 @@ public class CustomSerializationEnumJsonSerializer<T extends Enum<T> & EnumSeria
             serializedValue = type.getSerializedValue(value);
         } else {
             //noinspection ConstantConditions
-            serializedValue = type.getSerializedValue(new EnumSerializeProxy(value));
+            serializedValue = type.getSerializedValue(new EnumSerializeAdapter(value));
         }
         serializers.findValueSerializer(serializedValue.getClass()).serialize(serializedValue, gen, serializers);
     }

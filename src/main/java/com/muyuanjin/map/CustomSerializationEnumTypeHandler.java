@@ -2,7 +2,7 @@ package com.muyuanjin.map;
 
 import com.muyuanjin.annotating.CustomSerializationEnum;
 import com.muyuanjin.annotating.EnumSerialize;
-import com.muyuanjin.annotating.EnumSerializeProxy;
+import com.muyuanjin.annotating.EnumSerializeAdapter;
 import javafx.util.Pair;
 import org.apache.ibatis.type.BaseTypeHandler;
 import org.apache.ibatis.type.JdbcType;
@@ -35,7 +35,7 @@ public class CustomSerializationEnumTypeHandler<T extends Enum<T> & EnumSerializ
             serializedValue = type.getSerializedValue(parameter);
         } else {
             //noinspection ConstantConditions
-            serializedValue = type.getSerializedValue(new EnumSerializeProxy(parameter));
+            serializedValue = type.getSerializedValue(new EnumSerializeAdapter(parameter));
         }
         if (serializedValue instanceof String) {
             ps.setString(i, (String) serializedValue);

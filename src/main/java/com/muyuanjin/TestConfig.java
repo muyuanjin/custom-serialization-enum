@@ -3,7 +3,7 @@ package com.muyuanjin;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.muyuanjin.annotating.CustomSerializationEnum;
 import com.muyuanjin.annotating.EnumSerialize;
-import com.muyuanjin.annotating.EnumSerializeProxy;
+import com.muyuanjin.annotating.EnumSerializeAdapter;
 import com.muyuanjin.map.CustomSerializationEnumJsonDeserializer;
 import com.muyuanjin.map.CustomSerializationEnumJsonSerializer;
 import com.muyuanjin.map.CustomSerializationEnumTypeHandler;
@@ -36,7 +36,11 @@ import java.util.Set;
 public class TestConfig {
     private final Map<Class<Enum<?>>, Set<EnumSerialize<?>>> enumSerializes;
 
-    public TestConfig(@Value("${custom-serialization-enum.path:'com'}") String path) {
+    /**
+     * 在spring 配置文件中使用custom-serialization-enum.path即可配置扫描路径，没有配置就使用com.muyuanjin作为默认值
+     * 如果需要作为基础组件在多个项目中使用，就不是这样配置了，但是原理是一样的
+     */
+    public TestConfig(@Value("${custom-serialization-enum.path:com.muyuanjin}") String path) {
         final ClassPathScanningCandidateComponentProvider provider = new ClassPathScanningCandidateComponentProvider(false);
         enumSerializes = getEnumSerializes(provider, path);
         enumSerializes.putAll(getAnnotatedEnums(provider, path));
@@ -78,11 +82,6 @@ public class TestConfig {
         };
     }
 
-    /**
-     * 通过父类class和类路径获取该路径下父类的所有子类列表
-     *
-     * @return 所有该类子类或实现类的列表
-     */
     @SuppressWarnings({"unchecked", "rawtypes"})
     @SneakyThrows(ClassNotFoundException.class)
     private static Map<Class<Enum<?>>, Set<EnumSerialize<?>>> getEnumSerializes(ClassPathScanningCandidateComponentProvider provider, String path) {
@@ -92,7 +91,7 @@ public class TestConfig {
         final Map<Class<Enum<?>>, Set<EnumSerialize<?>>> enumSerializes = new HashMap<>();
         for (final BeanDefinition component : components) {
             final Class<?> cls = Class.forName(component.getBeanClassName());
-            if (cls.equals(EnumSerializeProxy.class)) {
+            if (cls.equals(EnumSerializeAdapter.class)) {
                 continue;
             }
             if (cls.isEnum()) {
@@ -118,7 +117,7 @@ public class TestConfig {
             final Class<?> cls = Class.forName(component.getBeanClassName());
             if (cls.isEnum()) {
                 for (Enum<?> anEnum : SharedSecrets.getJavaLangAccess().getEnumConstantsShared((Class) cls)) {
-                    enumSerializes.computeIfAbsent((Class<Enum<?>>) cls, t -> new HashSet<>()).add(new EnumSerializeProxy(anEnum));
+                    enumSerializes.computeIfAbsent((Class<Enum<?>>) cls, t -> new HashSet<>()).add(new EnumSerializeAdapter(anEnum));
                 }
             } else {
                 throw new UnsupportedOperationException("Class:" + cls.getCanonicalName() + "is not enum! " + "The class annotated by \"CustomSerializationEnum\" must be an enumeration class.");
@@ -126,5 +125,4 @@ public class TestConfig {
         }
         return enumSerializes;
     }
-
 }

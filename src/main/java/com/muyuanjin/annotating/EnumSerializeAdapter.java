@@ -6,14 +6,14 @@ package com.muyuanjin.annotating;
  * @author muyuanjin
  */
 @SuppressWarnings("rawtypes")
-public final class EnumSerializeProxy implements EnumSerialize {
+public final class EnumSerializeAdapter implements EnumSerialize {
     private final Enum<?> enumInstance;
 
     public Enum<?> getEnumInstance() {
         return enumInstance;
     }
 
-    public EnumSerializeProxy(Enum<?> enumInstance) {
+    public EnumSerializeAdapter(Enum<?> enumInstance) {
         this.enumInstance = enumInstance;
     }
 
@@ -32,11 +32,16 @@ public final class EnumSerializeProxy implements EnumSerialize {
         return enumInstance.toString();
     }
 
+    /**
+     * 获取原始类，专门给适配器使用的
+     */
     @Override
     public Class<?> getOriginalClass() {
         return enumInstance.getClass();
     }
-
+    /**
+     * 获取原始枚举对象，专门给适配器使用的
+     */
     @Override
     public Enum<?> getOriginalEnum() {
         return enumInstance;
