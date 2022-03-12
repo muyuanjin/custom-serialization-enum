@@ -6,7 +6,7 @@ package com.muyuanjin.annotating;
  * @author muyuanjin
  */
 @SuppressWarnings("rawtypes")
-public class EnumSerializeProxy implements EnumSerialize {
+public final class EnumSerializeProxy implements EnumSerialize {
     private final Enum<?> enumInstance;
 
     public Enum<?> getEnumInstance() {

@@ -24,7 +24,7 @@ public interface EnumSerialize<T extends Enum<T> & EnumSerialize<T>> {
         return (Enum<T>) this;
     }
 
-    default CustomSerializationEnum getAnnotation() {
-        return AnnotationUtils.findAnnotation(getOriginalClass(), CustomSerializationEnum.class);
+    static <T extends Enum<T> & EnumSerialize<T>> CustomSerializationEnum getAnnotation(Class<T> enumClass) {
+        return AnnotationUtils.findAnnotation(enumClass, CustomSerializationEnum.class);
     }
 }

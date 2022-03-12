@@ -19,9 +19,9 @@ public class CustomSerializationEnumJsonDeserializer<T extends Enum<T> & EnumSer
     private final Class<T> clazz;
 
     public CustomSerializationEnumJsonDeserializer(Pair<Class<Enum<?>>, Set<EnumSerialize<T>>> enumSerialize) {
-        EnumSerialize<T> next = enumSerialize.getValue().iterator().next();
-        clazz = next.getOriginalClass();
-        CustomSerializationEnum annotation = next.getAnnotation();
+        //noinspection unchecked,rawtypes
+        clazz = (Class) enumSerialize.getKey();
+        CustomSerializationEnum annotation = EnumSerialize.getAnnotation(clazz);
         type = annotation == null ? CustomSerializationEnum.Type.NAME : annotation.json();
     }
 
