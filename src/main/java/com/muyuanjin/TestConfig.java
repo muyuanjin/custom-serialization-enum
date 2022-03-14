@@ -21,12 +21,8 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.core.convert.converter.ConverterRegistry;
 import org.springframework.core.type.filter.AnnotationTypeFilter;
 import org.springframework.core.type.filter.AssignableTypeFilter;
-import sun.misc.SharedSecrets;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /**
  * @author muyuanjin
@@ -95,8 +91,8 @@ public class TestConfig {
                 continue;
             }
             if (cls.isEnum()) {
-                for (Enum<?> anEnum : SharedSecrets.getJavaLangAccess().getEnumConstantsShared((Class) cls)) {
-                    enumSerializes.computeIfAbsent((Class<Enum<?>>) cls, t -> new HashSet<>()).add((EnumSerialize<?>) anEnum);
+                for (Object anEnum : EnumSet.allOf((Class) cls)) {
+                    enumSerializes.computeIfAbsent((Class<Enum<?>>) cls, t -> new HashSet<>()).add(new EnumSerializeAdapter((Enum<?>) anEnum));
                 }
             } else {
                 throw new UnsupportedOperationException("Class:" + cls.getCanonicalName() + "is not enum! " + "The class that implements the \"EnumSerialize\" must be an enumeration class.");
@@ -116,8 +112,8 @@ public class TestConfig {
         for (final BeanDefinition component : components) {
             final Class<?> cls = Class.forName(component.getBeanClassName());
             if (cls.isEnum()) {
-                for (Enum<?> anEnum : SharedSecrets.getJavaLangAccess().getEnumConstantsShared((Class) cls)) {
-                    enumSerializes.computeIfAbsent((Class<Enum<?>>) cls, t -> new HashSet<>()).add(new EnumSerializeAdapter(anEnum));
+                for (Object anEnum : EnumSet.allOf((Class) cls)) {
+                    enumSerializes.computeIfAbsent((Class<Enum<?>>) cls, t -> new HashSet<>()).add(new EnumSerializeAdapter((Enum<?>) anEnum));
                 }
             } else {
                 throw new UnsupportedOperationException("Class:" + cls.getCanonicalName() + "is not enum! " + "The class annotated by \"CustomSerializationEnum\" must be an enumeration class.");

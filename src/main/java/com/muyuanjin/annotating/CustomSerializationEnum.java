@@ -1,9 +1,7 @@
 package com.muyuanjin.annotating;
 
-import sun.misc.SharedSecrets;
-
 import java.lang.annotation.*;
-import java.util.Arrays;
+import java.util.EnumSet;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
@@ -66,7 +64,7 @@ public @interface CustomSerializationEnum {
             }
             return (T) DESERIALIZE_MAP.computeIfAbsent(enumClass, t -> new ConcurrentHashMap<>())
                     .computeIfAbsent(serializedValue.toString(),
-                            t -> Arrays.stream(SharedSecrets.getJavaLangAccess().getEnumConstantsShared(enumClass)).filter(Objects::nonNull)
+                            t -> EnumSet.allOf(enumClass).stream().filter(Objects::nonNull)
                                     .filter(e -> {
                                         //noinspection ConstantConditions
                                         if (e instanceof EnumSerialize) {
