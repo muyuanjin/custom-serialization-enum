@@ -92,7 +92,7 @@ public class TestConfig {
             }
             if (cls.isEnum()) {
                 for (Object anEnum : EnumSet.allOf((Class) cls)) {
-                    enumSerializes.computeIfAbsent((Class<Enum<?>>) cls, t -> new HashSet<>()).add(new EnumSerializeAdapter((Enum<?>) anEnum));
+                    enumSerializes.computeIfAbsent((Class<Enum<?>>) cls, t -> new HashSet<>()).add((EnumSerialize<?>) anEnum);
                 }
             } else {
                 throw new UnsupportedOperationException("Class:" + cls.getCanonicalName() + "is not enum! " + "The class that implements the \"EnumSerialize\" must be an enumeration class.");
