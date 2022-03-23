@@ -14,13 +14,16 @@ import org.mybatis.spring.boot.autoconfigure.ConfigurationCustomizer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.config.BeanDefinition;
-import org.springframework.boot.autoconfigure.jackson.Jackson2ObjectMapperBuilderCustomizer;
+import org.springframework.boot.autoconfigure.jackson.JacksonAutoConfiguration;
+import org.springframework.boot.jackson.JsonComponent;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.convert.converter.ConverterRegistry;
 import org.springframework.core.type.filter.AnnotationTypeFilter;
 import org.springframework.core.type.filter.AssignableTypeFilter;
+import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
+import org.springframework.http.converter.json.SpringHandlerInstantiator;
 
 import java.util.*;
 
@@ -53,10 +56,17 @@ public class TestConfig {
         }
     }
 
+    /**
+     * spring会自动加载所有jackson的Bean
+     * {@link JacksonAutoConfiguration.Jackson2ObjectMapperBuilderCustomizerConfiguration.StandardJackson2ObjectMapperBuilderCustomizer#configureModules}、
+     * {@link Jackson2ObjectMapperBuilder#applicationContext},{@link SpringHandlerInstantiator}
+     * 而{@link Jackson2ObjectMapperBuilder#modules}会每次调用都覆盖，不适合用来注册jackson的组件（而是适合统一设置），还会覆盖spring自动注册modules<br>
+     * 还可以参考{@link JsonComponent}
+     */
     @Bean
-    @SuppressWarnings({"unchecked", "rawtypes"})
-    public Jackson2ObjectMapperBuilderCustomizer jsonCustomizer() {
-        return builder -> builder.modules(new SimpleModule() {
+    @SuppressWarnings({"unchecked", "rawtypes", "JavadocReference"})
+    public SimpleModule customSerializationEnumModule() {
+        return new SimpleModule() {
             {
                 for (Map.Entry<Class<Enum<?>>, Set<EnumSerialize<?>>> classSetEntry : enumSerializes.entrySet()) {
                     Class clazz = classSetEntry.getKey();
@@ -64,7 +74,7 @@ public class TestConfig {
                     addSerializer(clazz, new CustomSerializationEnumJsonSerializer(new Pair<>(classSetEntry.getKey(), classSetEntry.getValue())));
                 }
             }
-        });
+        };
     }
 
     @Bean
